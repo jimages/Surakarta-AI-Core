@@ -19,6 +19,7 @@ class GameStatus(IntEnum):
 
 @unique
 class Direction(IntEnum):
+    # 这里采用了2进制的表示方式来表示方向。
     Up = 1
     Down = 2
     Left = 4

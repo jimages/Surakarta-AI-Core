@@ -6,13 +6,14 @@ from status import Chess, GameStatus, Direction
 
 
 def random_action(board: Board):
+    """从所有可行操作中进行随机选择"""
     chess_list = []
     eat_list = []
     # get current chess
     chess = status.get_chess(board.status)
     if chess is None:
         return None
-    # traversal the board
+    # 遍历找到当前方可以进行的所以行动
     for y in range(board.board_size):
         for x in range(board.board_size):
             if board.get_chess(x, y) == chess:
@@ -20,19 +21,18 @@ def random_action(board: Board):
                 dir_list = board.get_can_move(x, y)
                 chess_can_eat = board.get_can_eat(x, y)
                 if dir_list:
-                    chess_list.append((x, y, dir_list))
+                    chess_list.append((x, y, dir_list, False))
                 if chess_can_eat:
-                    eat_list.append((x, y, chess_can_eat))
+                    eat_list.append((x, y, chess_can_eat, True))
     # 倾向性，优先吃子
-    if eat_list:
-        x, y, can_eat = random.choice(eat_list)
-        pos = random.choice(can_eat)
-        return Action(x, y, eat_pos=pos)
-    elif chess_list:
-        x, y, dir_list = random.choice(chess_list)
-        direction = random.choice(dir_list)
-        return Action(x, y, direction=direction)
-    else:
+    try:
+        x, y, targets, iseat = random.choice(eat_list + chess_list)
+        target = random.choice(targets)
+        if iseat:
+            return Action(x, y, eat_pos=target)
+        else:
+            return Action(x, y, direction=target)
+    except IndexError:
         return None
 
 

@@ -45,6 +45,7 @@ class Node(object):
                 # 选择最优的节点进行扩展
                 node = node.select()
             if node is self or node.__total_game:
+                # 如果当前节点是根节点，则进行扩展
                 child = node.expand(breadth)
             else:
                 child = node

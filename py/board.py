@@ -69,8 +69,9 @@ class Board(object):
 
     def __check_movable(self, x, y):
         '''
-        Check if chess on (x, y) can move.
+        如果能分出胜负已经在对手的步数，则判断不能移动
         '''
+
         chess = self.get_chess(x, y)
         if chess == Chess.Null:
             return False
@@ -82,10 +83,8 @@ class Board(object):
             return False
         return True
 
-    def __get_eat_pos(self, x, y, direction, chess, arc_count):
-        '''
-        Get the position of chess that can be eaten by chess on (x, y).
-        '''
+    def __get_eat_pos(self, x, y, direction, chess, arc_count, original_x, original_y):
+        '''判断(x,y)的子可以吃到的位置'''
         if chess == Chess.Null:
             return None, None
 
@@ -104,22 +103,23 @@ class Board(object):
             y_dir = Direction.Right if x <= 2 else Direction.Left
             if x == -1:
                 return self.__get_eat_pos(pos_list[y - 1][0],
-                                          pos_list[y - 1][1], x_dir, chess, arc_count + 1)
+                                          pos_list[y - 1][1], x_dir, chess, arc_count + 1, original_x, original_y)
             elif x == 6:
                 return self.__get_eat_pos(pos_list[y + 3][0],
-                                          pos_list[y + 3][1], x_dir, chess, arc_count + 1)
+                                          pos_list[y + 3][1], x_dir, chess, arc_count + 1, original_x, original_y)
             elif y == -1:
                 return self.__get_eat_pos(pos_list[x + 7][0],
-                                          pos_list[x + 7][1], y_dir, chess, arc_count + 1)
+                                          pos_list[x + 7][1], y_dir, chess, arc_count + 1, original_x, original_y)
             else:  # y == 6
                 return self.__get_eat_pos(pos_list[x + 11][0],
-                                          pos_list[x + 11][1], y_dir, chess, arc_count + 1)
+                                          pos_list[x + 11][1], y_dir, chess, arc_count + 1, original_x, original_y)
         else:
             new_chess = self.get_chess(x, y)
-            if new_chess == chess:
+            # 注意有一个特殊情况。
+            if new_chess == chess and (x != original_x or y != original_y):
                 return None, None
             elif new_chess == Chess.Null:
-                return self.__get_eat_pos(x, y, direction, chess, arc_count)
+                return self.__get_eat_pos(x, y, direction, chess, arc_count, original_x, original_y)
             else:
                 return (x, y) if arc_count else (None, None)
 
@@ -220,7 +220,7 @@ class Board(object):
 
     def get_can_move(self, x, y):
         '''
-        Get the list of direction that chess on (x, y) can move along.
+        获得某一个子可以移动的所有的位置
         '''
         dir_list = []
         for i in Direction:
@@ -229,17 +229,16 @@ class Board(object):
         return dir_list
 
     def get_can_eat(self, x, y):
-        '''
-        Get the list of chess pieces that chess on (x, y) can eat.
-        '''
+        '''获得可以当前子可以吃的棋'''
+
         if not self.__check_movable(x, y):
             return []
         chess_list = []
         chess = self.get_chess(x, y)
-        left = self.__get_eat_pos(x, y, Direction.Left, chess, 0)
-        right = self.__get_eat_pos(x, y, Direction.Right, chess, 0)
-        up = self.__get_eat_pos(x, y, Direction.Up, chess, 0)
-        down = self.__get_eat_pos(x, y, Direction.Down, chess, 0)
+        left = self.__get_eat_pos(x, y, Direction.Left, chess, 0, x, y)
+        right = self.__get_eat_pos(x, y, Direction.Right, chess, 0, x, y)
+        up = self.__get_eat_pos(x, y, Direction.Up, chess, 0, x, y)
+        down = self.__get_eat_pos(x, y, Direction.Down, chess, 0, x, y)
         if left[0] is not None:
             chess_list.append(left)
         if right[0] is not None:
