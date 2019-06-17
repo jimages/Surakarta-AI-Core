@@ -2,6 +2,7 @@ import math
 import random
 import simulator
 import status
+import time
 from sys import float_info
 from copy import deepcopy
 from board import Board
@@ -35,11 +36,13 @@ class Node(object):
         return self.__won_game / self.__total_game \
             if self.__total_game else 0
 
-    def search(self, depth=20, breadth=3):
+    def search(self, breadth=3, timeout=20):
         target = status.get_won_status(self.__status.status)
-        for _ in range(depth):
+        time_start = time.time()
+        while((time.time() - time_start) <= timeout):
             node = self
             while node.__children:
+                # 选择最优的节点进行扩展
                 node = node.select()
             if node is self or node.__total_game:
                 child = node.expand(breadth)
@@ -63,13 +66,14 @@ class Node(object):
             i.print_tree(tab + 1)
 
     def select(self):
+        """uct算法从中选择一个最优项"""
         selected = None
         best_value = -1.0
         for i in self.__children:
             uct = i.__won_game / (i.__total_game + float_info.epsilon)
-            uct += math.sqrt(math.log(self.__total_game + 1)
+            uct += math.sqrt(2 * math.log(self.__total_game + 1 + float_info.epsilon)
                              / (i.__total_game + float_info.epsilon))
-            uct += random.random() * float_info.epsilon
+            uct += 2 + float_info.epsilon
             if uct > best_value:
                 selected = i
                 best_value = uct

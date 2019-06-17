@@ -59,7 +59,7 @@ def ui_main(action_file=None, ai_first=False, depth=50, breadth=10):
         print_board(board)
         if board.status == ai_status:
             ai = Node(board)
-            action = ai.search(depth, breadth)
+            action = ai.search(breadth, 5)
             write_action(ai, action, action_file)
         else:
             try:
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                         help='set to 1 if AI should play chess first')
     parser.add_argument('-d', '--depth', default=50, type=int,
                         help='set the search depth of AI')
-    parser.add_argument('-b', '--breadth', default=10, type=int,
+    parser.add_argument('-b', '--breadth', default=30, type=int,
                         help='set the search breadth of AI')
     # parse arguments
     args = parser.parse_args()

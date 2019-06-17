@@ -88,6 +88,8 @@ class Board(object):
         '''
         if chess == Chess.Null:
             return None, None
+
+        # 四个角是吃不到子的
         if (x, y) in [(0, 0), (0, 5), (5, 0), (5, 5)]:
             return None, None
         success, x, y = self.__get_target_pos(x, y, direction)

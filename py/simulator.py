@@ -23,7 +23,7 @@ def random_action(board: Board):
                     chess_list.append((x, y, dir_list))
                 if chess_can_eat:
                     eat_list.append((x, y, chess_can_eat))
-    # genearte actions
+    # 倾向性，优先吃子
     if eat_list:
         x, y, can_eat = random.choice(eat_list)
         pos = random.choice(can_eat)
