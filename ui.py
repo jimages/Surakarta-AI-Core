@@ -2,6 +2,7 @@ import argparse
 from mcts import Node
 from board import Board, Action
 from status import GameStatus, Direction
+import logging
 
 
 def read_action(file_name=None):
@@ -59,7 +60,7 @@ def ui_main(action_file=None, ai_first=False, depth=50, breadth=10):
         print_board(board)
         if board.status == ai_status:
             ai = Node(board)
-            action = ai.search(breadth, 5)
+            action = ai.search(30)
             write_action(ai, action, action_file)
         else:
             try:
@@ -84,6 +85,7 @@ def ui_main(action_file=None, ai_first=False, depth=50, breadth=10):
 
 if __name__ == '__main__':
     # initialize parser
+    logging.basicConfig(level=logging.DEBUG)
     parser = argparse.ArgumentParser(prog='Surakarta MCTS AI')
     parser.formatter_class = argparse.RawTextHelpFormatter
     parser.description = 'An artificial intelligence program that\n' + \

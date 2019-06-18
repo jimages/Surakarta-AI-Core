@@ -36,7 +36,8 @@ class Node(object):
         return self.__won_game / self.__total_game \
             if self.__total_game else 0
 
-    def search(self, breadth=3, timeout=20):
+    def search(self, timeout=20):
+        """mcts搜索，返回最优搜索步骤"""
         target = status.get_won_status(self.__status.status)
         time_start = time.time()
         while((time.time() - time_start) <= timeout):
@@ -46,7 +47,7 @@ class Node(object):
                 node = node.select()
             if node is self or node.__total_game:
                 # 如果当前节点是根节点，则进行扩展
-                child = node.expand(breadth)
+                child = node.expand()
             else:
                 child = node
             if child:
@@ -80,24 +81,16 @@ class Node(object):
                 best_value = uct
         return selected
 
-    def expand(self, breadth=3):
+    def expand(self):
         if self.__status.won:
             return None
         else:
-            actions = []
-            action = simulator.random_action(self.__status)
-            for _ in range(breadth):
-                try_count = 0
-                while action in actions:
-                    action = simulator.random_action(self.__status)
-                    try_count += 1
-                    if try_count > breadth * 2:
-                        return random.choice(self.__children)
+            actions = simulator.get_all_possible_action(self.__status)
+            for action in actions:
                 next_status = deepcopy(self.__status)
                 next_status.apply_action(action)
-                actions.append(action)
                 self.__children.append(Node(next_status, action, self))
-            return random.choice(self.__children)
+            return self.select()
 
     def playout(self, target_status):
         return simulator.simulate(self.__status, target_status)

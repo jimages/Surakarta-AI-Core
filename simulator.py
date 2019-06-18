@@ -3,12 +3,24 @@ import copy
 import status
 from board import Board, Action
 from status import Chess, GameStatus, Direction
+import logging
 
 
 def random_action(board: Board):
     """从所有可行操作中进行随机选择"""
+    try:
+        return random.choice(get_all_possible_action(board))
+    except IndexError:
+        return None
+    except TypeError:
+        return None
+
+
+def get_all_possible_action(board: Board):
+    """获得所有的可行action"""
     chess_list = []
     eat_list = []
+    actions = []
     # get current chess
     chess = status.get_chess(board.status)
     if chess is None:
@@ -24,34 +36,35 @@ def random_action(board: Board):
                     chess_list.append((x, y, dir_list, False))
                 if chess_can_eat:
                     eat_list.append((x, y, chess_can_eat, True))
-    # 倾向性，优先吃子
-    try:
-        x, y, targets, iseat = random.choice(eat_list + chess_list)
-        target = random.choice(targets)
+    for x, y, targets, iseat in eat_list + chess_list:
         if iseat:
-            return Action(x, y, eat_pos=target)
+            actions += [Action(x, y, eat_pos=target) for target in targets]
         else:
-            return Action(x, y, direction=target)
-    except IndexError:
-        return None
-
+            actions += [Action(x, y, direction=target) for target in targets]
+    return actions
 
 def simulate(board: Board, target_status):
     # get a copy of board
     b = copy.deepcopy(board)
+    history = []
     # judge the status
     opposite_status = status.get_opposite(target_status)
     # start simulation
-    action = None
+    num = 0
     while True:
+        action = random_action(b)
+        # todo: 存储成树的结构，可以存储下之前模拟的结果
         if b.status == target_status:
+            logging.debug("total simulate: %d", num)
             return 1   # won the game
         elif b.status == opposite_status:
+            logging.debug("total simulate: %d", num)
             return 0   # lost the game
-        action = random_action(b)
+        num += 1
         if action is None:
             return None
         b.apply_action(action)
+        history.append(copy.deepcopy(b))
 
 
 # some test
