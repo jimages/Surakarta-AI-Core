@@ -67,6 +67,13 @@ class Board(object):
             s += '\n'
         return s.rstrip('\n')
 
+    def __eq__(self, other):
+        for i in range(6):
+            for j in range(6):
+                if self.__board[i][j] != other.__board[i][j]:
+                    return False
+        return True
+
     def __check_movable(self, x, y):
         '''
         如果能分出胜负已经在对手的步数，则判断不能移动

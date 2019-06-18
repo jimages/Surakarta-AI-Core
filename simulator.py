@@ -43,10 +43,10 @@ def get_all_possible_action(board: Board):
             actions += [Action(x, y, direction=target) for target in targets]
     return actions
 
+
 def simulate(board: Board, target_status):
     # get a copy of board
     b = copy.deepcopy(board)
-    history = []
     # judge the status
     opposite_status = status.get_opposite(target_status)
     # start simulation
@@ -64,8 +64,6 @@ def simulate(board: Board, target_status):
         if action is None:
             return None
         b.apply_action(action)
-        history.append(copy.deepcopy(b))
-
 
 # some test
 if __name__ == '__main__':

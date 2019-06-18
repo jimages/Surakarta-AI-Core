@@ -1,4 +1,4 @@
-import argparse
+import argparse, time
 from mcts import Node
 from board import Board, Action
 from status import GameStatus, Direction
@@ -51,17 +51,24 @@ def print_board(board):
     print()
 
 
-def ui_main(action_file=None, ai_first=False, depth=50, breadth=10):
+def ui_main(action_file=None, ai_first=False):
     board = Board()
-    ai, action = None, None
+    action = None
     ai_status = GameStatus.RedMoving if ai_first else GameStatus.BlackMoving
+    node = Node(board)
     # main loop
     while not board.won:
         print_board(board)
         if board.status == ai_status:
-            ai = Node(board)
-            action = ai.search(30)
-            write_action(ai, action, action_file)
+            time_start = time.time()
+            count = 0
+            # 在限定时间进行蒙特卡罗模拟
+            while((time.time() - time_start) < 30):
+                count += 1
+                node.search()
+            logging.debug("total count %d", count)
+            action = node.find_best_child().action
+            write_action(node, action, action_file)
         else:
             try:
                 action = read_action(action_file)
@@ -73,7 +80,8 @@ def ui_main(action_file=None, ai_first=False, depth=50, breadth=10):
             if action is None:
                 print('invalid command')
                 continue
-        board.apply_action(action)
+        node = node.apply_action(action)
+        board = node.status
     print_board(board)
     print('game over', end='')
     if board.status == GameStatus.RedWon:
@@ -101,5 +109,4 @@ if __name__ == '__main__':
                         help='set the search breadth of AI')
     # parse arguments
     args = parser.parse_args()
-    ui_main(action_file=args.output, ai_first=bool(args.aifirst),
-            depth=args.depth, breadth=args.breadth)
+    ui_main(action_file=args.output, ai_first=bool(args.aifirst))
